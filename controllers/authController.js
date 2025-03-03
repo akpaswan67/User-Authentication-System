@@ -75,7 +75,7 @@ exports.resetPasswordRequest = async (req, res) => {
     user.resetToken = resetToken;
     await user.save();
 
-    const resetURL = `http://localhost:5000/auth/reset-password/${resetToken}`;
+    const resetURL = `https://user-authentication-system-lqqv.onrender.com/auth/reset-password/${resetToken}`;
     await sendEmail(
       user.email,
       "Password Reset",
