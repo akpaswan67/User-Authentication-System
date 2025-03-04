@@ -48,27 +48,27 @@ Authentication
 1. Register User
 	POST /auth/register
 		{
-			"name": "John Doe",
-			"email": "johndoe@example.com",
+			"name": "Test User",
+			"email": "testuser@gmail.com",
 			"password": "securepassword"
 		}
 2. Login User
 	POST /auth/login
 		{
-			"email": "johndoe@example.com",
+			"email": "testuser@gmail.com",
 			"password": "securepassword"
 		}	
 
 3. Request Password Reset
 	POST /auth/reset-password-request
 		{
-			"email": "johndoe@example.com"
+			"email": "testuser@gmail.com"
 		}
 
 4. Reset Password
 	POST /auth/reset-password
 		{
-			"token": "your_reset_token",
+			"token": "your_reset_token", // send on registered email, copy only reset_token 
 			"newPassword": "newsecurepassword"
 		}
 
