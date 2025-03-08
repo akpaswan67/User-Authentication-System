@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendEmail");
 
+
 //Here user register
 exports.register = async (req, res) => {
   try {
@@ -18,15 +19,49 @@ exports.register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
     const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
+      isVerified: false,
+      verificationToken,
     });
 
-    res
-      .status(201)
-      .json({ message: "User registered successfully", user: newUser });
+    const verificationURL = `http://localhost:8000/auth/verify-email/${verificationToken}`;
+
+    await sendEmail(
+      newUser.email,
+      "Verify Your Email",
+      `Click here to verify your email: ${verificationURL}`
+    );
+
+    res.status(201).json({
+      message: "User registered successfully. Please verify your email.",
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// before login verify email
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findOne({ email: decoded.email });
+
+    if (!user) return res.status(400).json({ message: "Invalid token" });
+
+    user.isVerified = true;
+    user.verificationToken = "";
+    await user.save();
+
+    res.status(200).json({ message: "Email verified successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
@@ -43,6 +78,10 @@ exports.login = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
+
+    if (!user.isVerified) {
+      return res.status(400).json({ message: "Please verify your email first" });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
@@ -75,7 +114,7 @@ exports.resetPasswordRequest = async (req, res) => {
     user.resetToken = resetToken;
     await user.save();
 
-    const resetURL = `https://user-authentication-system-lqqv.onrender.com/auth/reset-password/${resetToken}`;
+    const resetURL = `http://localhost:8000/auth/reset-password/${resetToken}`;
     await sendEmail(
       user.email,
       "Password Reset",
