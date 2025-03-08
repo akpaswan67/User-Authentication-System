@@ -31,7 +31,7 @@ exports.register = async (req, res) => {
       verificationToken,
     });
 
-    const verificationURL = `http://localhost:8000/auth/verify-email/${verificationToken}`;
+    const verificationURL = `https://user-authentication-system-lqqv.onrender.com/auth/verify-email/${verificationToken}`;
 
     await sendEmail(
       newUser.email,
@@ -114,7 +114,7 @@ exports.resetPasswordRequest = async (req, res) => {
     user.resetToken = resetToken;
     await user.save();
 
-    const resetURL = `http://localhost:8000/auth/reset-password/${resetToken}`;
+    const resetURL = `https://user-authentication-system-lqqv.onrender.com/auth/reset-password/${resetToken}`;
     await sendEmail(
       user.email,
       "Password Reset",
